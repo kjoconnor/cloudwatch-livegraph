@@ -29,20 +29,24 @@
 
 			
 			function getData() {
+				// Grab new data from cw.php and run the JS function updateGraph with that info
 				$.get('cw.php', function(data) { updateGraph(data) });
 			}
 			
 			function updateGraph(r) {
+				// Keep track of the highest number we've seen
 				if(r > highestMetric) {
 					highestMetric = r;
 					$('#counter').text('Highest Metric seen: ' + r);
 				}
 								
 				plot_data[0].push([new Date().getTime(), r]);
+				// Limit the number of entries to 100
 				if(plot_data.length > 100) {
 					plot_data = plot_data.splice(1);
 				}
 				
+				// Redraw the graph with the new data
 				plot.setData(plot_data);
 				plot.setupGrid();
 				plot.draw();
