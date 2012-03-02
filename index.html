@@ -1,0 +1,59 @@
+<!-- 
+	Kevin O'Connor <kevino@arc90.com> / @gooeyblob
+	My javascript/HTML skills are pretty lacking so I'm certain there are nicer
+	ways to be doing most of this.  This is a pretty easy to understand proof of concept though.
+
+	Improvements welcomed!
+-->
+<html>
+	<head>
+		<script type="text/javascript" src="flot/jquery.js"></script>
+		<script type="text/javascript" src="flot/jquery.flot.js"></script>
+		<title>CloudWatch Metrics</title>
+	</head>
+
+	<body>
+		<div id='cw' style='width:100%; height:90%;'></div>
+		<div id='counter' style='float: right;'>Highest Metric seen: </div>
+		<script type="text/javascript">
+			var plot_data = [[], []];
+			var options = {
+					legend: { show: true, position: "nw" },
+					grid: { hoverable: true, clickable: false },
+					xaxis: { mode: "time", timeformat: "%H:%M:%S" }
+				};
+
+			var plot = $.plot($("#cw"), plot_data, options);
+
+			var highestMetric = 0;
+
+			
+			function getData() {
+				$.get('cw.php', function(data) { updateGraph(data) });
+			}
+			
+			function updateGraph(r) {
+				if(r > highestMetric) {
+					highestMetric = r;
+					$('#counter').text('Highest Metric seen: ' + r);
+				}
+								
+				plot_data[0].push([new Date().getTime(), r]);
+				if(plot_data.length > 100) {
+					plot_data = plot_data.splice(1);
+				}
+				
+				plot.setData(plot_data);
+				plot.setupGrid();
+				plot.draw();
+			}
+			
+			// Set the update frequency, 20000 = 20s
+			// There's not much use for making this faster as CloudWatch doesn't update often enough
+			setInterval(getData, 20000);
+			
+		</script>
+	</body>
+</html>
+	
+	
